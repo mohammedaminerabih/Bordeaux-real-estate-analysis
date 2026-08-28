@@ -1,85 +1,95 @@
-# 🏠 Bordeaux Real Estate Analysis
+# Bordeaux Real Estate Analysis
 
-**Real Estate Analysis and Visualization in Bordeaux (2024)**
+Real estate data analysis project based on DVF (Demandes de Valeurs Foncières) data from the French government, focusing on Bordeaux, France (Gironde, 33).
 
-A real estate data analysis project based on DVF (Demandes de Valeurs Foncières) data from the French government, focusing on the Bordeaux metropolitan area.
+## Project Goals
 
-## 🎯 Project Goals
+- Analyse real estate price trends in Bordeaux
+- Identify patterns by neighbourhood and property type
+* Produce clear visualizations
+* Practice the complete data science project cycle (from raw data to results)
 
-- Analyze real estate price trends in the Bordeaux region
-- Identify patterns by neighborhood and property type
-- Create clear and informative visualizations
-- Practice the complete Data Science project cycle (from raw data to results)
+## Data Source
 
-## 📊 Data Source
+Data comes from the official DVF database:
 
-Data comes from the official **DVF (Demandes de Valeurs Foncières)** database:
-
-- Source: [data.gouv.fr](https://files.data.gouv.fr/geo-dvf/latest/csv/)
+- Source: data.gouv.fr
 - Scope: Gironde Department (33)
 - Period: 2024
 
-## 🚀 Installation and Usage
+## Installation and Usage
 
 ### Prerequisites
 
-```bash
-python 3.8+
-pandas
-matplotlib
-seaborn
-requests
-```
+- Python 3.10+
+- Dependencies listed in `requirements.txt`
 
 ### Install Dependencies
 
 ```bash
-pip install pandas matplotlib seaborn jupyter requests
+pip install -r requirements.txt
 ```
 
-### Download Data
+### Download and Preprocess Data
 
-The script automatically downloads the data on first run. Alternatively:
+The script `src/preprocessing.py` automatically downloads the data on first run. Alternatively:
 
 1. Go to https://files.data.gouv.fr/geo-dvf/latest/csv/2024/departements/
 2. Download `33.csv.gz` (Gironde department)
-3. Place the file in the project folder
+3. Place the file in data/raw/ as 33.csv.
 
-### Run Analysis
+### Run the preprocessing
+
+To download and filter the raw DVF data for Bordeaux:
 
 ```bash
-python analysis.py
+python src/preprocessing.py
 ```
 
-## 📅 Roadmap
+This creates:
 
-### ✅ Sprint 1 (Week 1-2) - COMPLETED
+data/processed/bordeaux_data.csv
 
-- [X] Repository setup
-- [X] DVF data download
-- [X] Data loading and filtering
-- [X] Initial dataset exploration
-- [X] **Result**: 11,660 real estate transactions in Bordeaux loaded
-- [X] Data cleaning (filter sales, houses/apartments)
-- [X] Feature engineering (price per sqm)
-- [X] Outlier management
+The next step is the exploratory data analysis in:
 
-### 📋 Sprint 2 (Week 3-4)
+notebooks/01_eda.ipynb
 
-- [ ] Data cleaning
-- [ ] Create visualizations
-- [ ] Price analysis by neighborhood
+## Project Structure
 
-### 🎨 Sprint 3 (Month 2)
+```
+Bordeaux-real-estate-analysis/
+├── data/
+│   ├── raw/
+│   │   └── 33.csv
+│   └── processed/
+│       └── bordeaux_data.csv
+├── notebooks/
+│   └── 01_eda.ipynb
+├── src/
+│   ├── preprocessing.py
+│   └── data_cleaning.py
+├── results/
+│   └── figures/
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
 
-- [ ] Interactive dashboard
-- [ ] Final documentation
-- [ ] Deployment
+## Upcoming Tasks
 
-## 👨‍💻 Author
+- Exploratory data analysis (EDA) in `notebooks/01_eda.ipynb`
+- Data cleaning and preparation
+- Feature engineering
+- Train/test split and baseline model
+- Modelling (linear regression, random forest, gradient boosting)
+- Model evaluation (MAE, RMSE, R²)
+- Error analysis
+- Final documentation
 
-Project completed as part of the Master's in Computer Science (AI track) - University of Bordeaux
+## Author
 
-## 📝 License
+Project conducted as part of the Master's in Artificial Intelligence (IA) at the University of Bordeaux.
+
+## License
 
 This project uses public data from the French government.

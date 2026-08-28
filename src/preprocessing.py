@@ -47,7 +47,7 @@ def download_data(url, output_file):
         print(f"Error downloading file: {e}")
         raise
 
-def load_and_filter_data(input_file='33.csv', output_file='bordeaux_data.csv', auto_download=True):
+def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/processed/bordeaux_data.csv', auto_download=True):
     """
     Load DVF dataset and filter for Bordeaux city
     
@@ -57,22 +57,27 @@ def load_and_filter_data(input_file='33.csv', output_file='bordeaux_data.csv', a
         auto_download: Automatically download if file not found
     """
     
+    # Determine base directory (parent of src)
+    base_dir = Path(__file__).resolve().parent.parent
+    input_path = base_dir / input_file
+    output_path = base_dir / output_file
+    
     # Check if file exists, download if needed
-    if not Path(input_file).exists():
+    if not input_path.exists():
         if auto_download:
             url = 'https://files.data.gouv.fr/geo-dvf/latest/csv/2024/departements/33.csv.gz'
             print(f"File not found. Downloading from data.gouv.fr...")
-            download_data(url, input_file)
+            download_data(url, str(input_path))
         else:
-            print(f"Error: File '{input_file}' not found")
+            print(f"Error: File '{input_path}' not found")
             print("Download from: https://files.data.gouv.fr/geo-dvf/latest/csv/")
             return
     
     # Load data
     print("Loading data...")
-    print(f"Source file: {input_file}")
+    print(f"Source file: {input_path}")
     
-    df = pd.read_csv(input_file, low_memory=False)
+    df = pd.read_csv(input_path, low_memory=False)
     print(f"Loaded successfully: {len(df):,} rows, {len(df.columns)} columns")
     
     # Display available columns
@@ -137,15 +142,15 @@ def load_and_filter_data(input_file='33.csv', output_file='bordeaux_data.csv', a
             print(f"   {int(year)}: {count:,}")
     
     # Save filtered data
-    print(f"\nSaving filtered data to: {output_file}")
-    df_bordeaux.to_csv(output_file, index=False)
+    print(f"\nSaving filtered data to: {output_path}")
+    df_bordeaux.to_csv(output_path, index=False)
     print(f"Saved: {len(df_bordeaux):,} rows")
-    print(f"\nSuccess! You can now work with '{output_file}'")
+    print(f"\nSuccess! You can now work with '{output_path}'")
 
 if __name__ == "__main__":
     print("=" * 60)
     print("   BORDEAUX REAL ESTATE ANALYSIS - SPRINT 1")
     print("=" * 60)
     print()
-
+    
     load_and_filter_data()
