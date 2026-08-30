@@ -1,5 +1,4 @@
 """
-Bordeaux Real Estate Analysis - Sprint 1
 Data Cleaning and Feature Engineering
 """
 
@@ -13,7 +12,7 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     input_path = base_dir / input_file
     output_path = base_dir / output_file
 
-    print(f"Loading {input_path}...")
+    print(f"Loading {input_path}.")
     try:
         df = pd.read_csv(input_path, low_memory=False)
     except FileNotFoundError:
@@ -23,7 +22,7 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     print(f"Original shape: {df.shape}")
 
     # 1) filter "Business"
-    print("\n1. Applying filters...")
+    print("\n1. Applying filters ...")
 
     # Keep only 'Vente'
     df_clean = df[df['nature_mutation'] == 'Vente'].copy()
@@ -48,11 +47,10 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     cols_to_keep = [c for c in cols_to_keep if c in df_clean.columns]
     df_clean = df_clean[cols_to_keep]
 
-    # 3) Deduplication Logic (Crucial!)
-    # We must be careful here.
-    # If a house has 2 rows (House + Garden), usually only the House row has surface_reelle_bati
-    # The price is on both.
-    # Strategy: Group by mutation and SUM surface, but take FIRST of price (since its repeated)
+    # 3) Deduplication Logic 
+    # We must be careful here. If a house has 2 rows (House + Garden), usually only the House row has surface_reelle_bati
+    # The price is on both
+    # Our Strategy is to group by mutation and sum surface, but take 1st of price since its repeated
 
     print("\n2. Handling multi-row transactions...")
 
@@ -60,10 +58,10 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     agg_rules = {
         'date_mutation': 'first',
         'valeur_fonciere': 'first',  # Price is repeated, take one
-        'type_local': 'first',       # Simplify: take main type
+        'type_local': 'first',       # To simplify take main type
         'code_postal': 'first',
         'nom_commune': 'first',
-        'surface_reelle_bati': 'sum', # Sum surface parts (if split)
+        'surface_reelle_bati': 'sum', # Sum surface parts if split
         'nombre_pieces_principales': 'sum',
         'latitude': 'first',
         'longitude': 'first'
@@ -76,14 +74,13 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     # 4) Feature Engineering
     print("\n3. Feature Engineering...")
 
-    # Price per sqm
-    # Avoid division by zero
+    # Price per sqm & avoid division by 0
     df_grouped = df_grouped[df_grouped['surface_reelle_bati'] > 0]
     df_grouped['prix_m2'] = df_grouped['valeur_fonciere'] / df_grouped['surface_reelle_bati']
 
     print(f"   - Calculated Price/m² (removed 0 surface rows): {len(df_grouped)}")
 
-    # 5) Outlier Removal (Business Logic from Taches.md)
+    # 5) Remove outliers
     print("\n4. Removing Outliers...")
     print(f"   - Price/m² constraints: 500€ < p < 15,000€")
 
@@ -95,7 +92,7 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     removed = initial_count - len(df_final)
     print(f"   - Removed {removed} outliers")
 
-    # 6) Additional cleaning: drop rows with missing latitude/longitude
+    # 6) Additional cleaning: drop rows with missing latitude & longitude
     print("\n5. Dropping missing latitude/longitude...")
     before = len(df_final)
     df_final = df_final.dropna(subset=['latitude', 'longitude'])

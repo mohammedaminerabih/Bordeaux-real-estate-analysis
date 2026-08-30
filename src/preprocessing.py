@@ -44,7 +44,7 @@ def download_data(url, output_file):
         print(f"Extraction complete: {output_file}")
         
     except Exception as e:
-        print(f"Error downloading file: {e}")
+        print(f"Error downloadin file: {e}")
         raise
 
 def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/processed/bordeaux_data.csv', auto_download=True):
@@ -57,12 +57,12 @@ def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/process
         auto_download: Automatically download if file not found
     """
     
-    # Determine base directory (parent of src)
+    # Determine parent of src
     base_dir = Path(__file__).resolve().parent.parent
     input_path = base_dir / input_file
     output_path = base_dir / output_file
     
-    # Check if file exists, download if needed
+    # Check if file exist, download if needed
     if not input_path.exists():
         if auto_download:
             url = 'https://files.data.gouv.fr/geo-dvf/latest/csv/2024/departements/33.csv.gz'
@@ -80,7 +80,7 @@ def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/process
     df = pd.read_csv(input_path, low_memory=False)
     print(f"Loaded successfully: {len(df):,} rows, {len(df.columns)} columns")
     
-    # Display available columns
+    # Display columns
     print("\nAvailable columns:")
     for i, col in enumerate(df.columns, 1):
         print(f"   {i:2d}. {col}")
