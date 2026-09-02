@@ -57,7 +57,7 @@ def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/process
         auto_download: Automatically download if file not found
     """
     
-    # Determine parent of src
+    # Determine parent of src to function wherever
     base_dir = Path(__file__).resolve().parent.parent
     input_path = base_dir / input_file
     output_path = base_dir / output_file
@@ -109,7 +109,7 @@ def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/process
     print("\nFirst 5 rows:")
     print(df_bordeaux.head())
     
-    # Basic statistics
+    # Statistics
     print("\nQuick statistics:")
     
     if 'valeur_fonciere' in df_bordeaux.columns:

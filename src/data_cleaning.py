@@ -7,7 +7,7 @@ import numpy as np
 from pathlib import Path
 
 def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/processed/bordeaux_clean.csv'):
-    # Determine base directory (parent of src)
+    # Determine base directory to function anywhere
     base_dir = Path(__file__).resolve().parent.parent
     input_path = base_dir / input_file
     output_path = base_dir / output_file
