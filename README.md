@@ -115,10 +115,10 @@ Bordeaux-real-estate-analysis/
 ✅ Project restructuring and organization
 ✅ Documentation of all phases
 
-## Upcoming Tasks (Awaiting User Authorization)
+## Upcoming Tasks
 
 - Feature engineering (Phase 6)
-- Train/test split and baseline The user did not explicitly authorize moving to these phases, so they remain pending.
+- Train/test split and baseline
 - Modeling (linear regression, random forest, gradient boosting) (Phase 7+)
 - Model evaluation (MAE, RMSE, R²)
 - Error analysis
@@ -134,6 +134,6 @@ This project uses public data from the French government.
 
 ## Important Notes
 
-- All work beyond Phase 5 (EDA) has been reverted due to data leakage concerns
-- Any future feature engineering or modeling must be explicitly authorized by the user
+- All work beyond EDA has been reverted due to data leakage concerns
+- Any future feature engineering 
 - The EDA work in notebooks/01_eda.ipynb represents the current state of the project
