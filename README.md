@@ -126,6 +126,7 @@ Bordeaux-real-estate-analysis/
 ✅ Modèle 2 (Random Forest) (src/model_rf.py) with leakage-safe pipeline and performance metrics
 
 ## Upcoming Tasks
+## Upcoming Tasks
 
 - Model evaluation and comparison
 - Error analysis
