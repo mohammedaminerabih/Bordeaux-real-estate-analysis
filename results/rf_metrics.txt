@@ -1,0 +1,35 @@
+Random Forest Regressor Performance Metrics
+===============================
+
+Hyperparameters:
+  n_estimators: 300
+  max_depth: 20
+  max_features: sqrt
+  min_samples_leaf: 5
+  random_state: 42
+
+Training Set:
+MAE:  702.70 €/m²
+RMSE: 995.48 €/m²
+R²:   0.5407
+
+Test Set:
+MAE:  853.64 €/m²
+RMSE: 1203.61 €/m²
+R²:   0.2108
+
+Feature Count: 32
+Training Samples: 3138
+Test Samples: 785
+
+Top 10 Feature Importances:
+  surface_reelle_bati: 0.095854
+  latitude: 0.087924
+  distance_to_center_km: 0.082566
+  longitude: 0.082519
+  pieces_x_longitude: 0.071649
+  pieces_x_distance: 0.070235
+  pieces_x_latitude: 0.069359
+  type_local_x_longitude: 0.058596
+  type_local_x_latitude: 0.048488
+  type_local_x_distance: 0.043813
