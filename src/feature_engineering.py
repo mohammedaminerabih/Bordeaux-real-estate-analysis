@@ -216,7 +216,6 @@ def main():
     print("- Interactions: type_local x geo, pieces x geo, type_local x pieces")
     print()
     print("All features are safe: none derived from valeur_fonciere or surface_reelle_bati")
-    print("Ready for Phase 7: Train/test split + baseline modeling")
 
 if __name__ == "__main__":
     main()

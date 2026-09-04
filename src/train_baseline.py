@@ -73,8 +73,8 @@ def engineer_features_train(X_train):
     df_train = X_train.copy()
 
     # Drop leakage columns that should not be used as features
-    # Keep prix_m2 as target variable (its not in X_train)
-    df_train = df_train.drop(columns=['valeur_fonciere', 'surface_reelle_bati'], errors='ignore')
+    # Keep prix_m2 and surface_reelle_bati as target variable components (its not in X_train)
+    df_train = df_train.drop(columns=['valeur_fonciere'], errors='ignore')
 
     # Ensure date_mutation is datetime
     df_train['date_mutation'] = pd.to_datetime(df_train['date_mutation'])
@@ -222,8 +222,8 @@ def engineer_features_test(X_test, transform_objects):
     df_test = X_test.copy()
 
     # Drop leakage columns that should not be used as features
-    # Keep prix_m2 as target variable (it's not in X_test)
-    df_test = df_test.drop(columns=['valeur_fonciere', 'surface_reelle_bati'], errors='ignore')
+    # Keep prix_m2 and surface_reelle_bati as target variable components (it's not in X_test)
+    df_test = df_test.drop(columns=['valeur_fonciere'], errors='ignore')
 
     # Ensure date_mutation is datetime
     df_test['date_mutation'] = pd.to_datetime(df_test['date_mutation'])
@@ -355,8 +355,9 @@ def prepare_modeling_data(df_features):
         'latitude_bin',          # Categorical latitude bin (we use latitude_bin_code)
         'longitude_bin',         # Categorical longitude bin (we use longitude_bin_code)
         'nombre_pieces_binned',  # Categorical pieces bin (we use nombre_pieces_binned_code)
-        # Note: valeur_fonciere and surface_reelle_bati are NOT in df_features
-        # cause we droped them in the feature engineering functions
+        # Note: valeur_fonciere is NOT in df_features
+        # cause we droped it in the feature engineering functions
+        # surface_reelle_bati IS in df_features and is kept for modeling
     ]
 
     # Select feature columns (all except excluded)
@@ -463,7 +464,7 @@ def save_model_and_data(model, feature_names, X_train, X_test, y_train, y_test, 
 
     # Save metrics
     metrics_path = base_dir / 'results' / 'baseline_metrics.txt'
-    with open(metrics_path, 'w') as f:
+    with open(metrics_path, 'w', encoding='utf-8') as f:
         f.write(f"Baseline Linear Regression Performance Metrics\n")
         f.write(f"=====\n\n")
         f.write(f"Training Set:\n")
@@ -528,12 +529,11 @@ def main():
 
     print()
     print("=" * 70)
-    print("PHASE 7 COMPLETE: Baseline model trained and evaluated successfully")
     print("All feature engineering was leakage-safe:")
-    print("  - Train/test split done BEFORE feature engineering")
-    print("  - Aggregate features computed ONLY on training set")
-    print("  - Same transformations applied to test set")
-    print("  - No information from test set contaminated training")
+    print("- Train/test split done BEFORE feature engineering")
+    print("- Aggregate features computed ONLY on training set")
+    print("- Same transformations applied to test set")
+    print("- No information from test set contaminated training")
     print("=" * 70)
 
 if __name__ == "__main__":

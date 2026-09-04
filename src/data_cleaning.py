@@ -92,6 +92,20 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     removed = initial_count - len(df_final)
     print(f"   - Removed {removed} outliers")
 
+    # 5.5) Additional outlier filtering on surface area and room count
+    print("\n4a. Additional outlier filtering...")
+    # Remove extreme surface outliers (likly non residential properties)
+    surface_before = len(df_final)
+    df_final = df_final[df_final['surface_reelle_bati'] <= 500]  # <= 500 m²
+    surface_removed = surface_before - len(df_final)
+    print(f"   - Removed {surface_removed} extreme surface outliers (>500 m²)")
+
+    # nombre_pieces_principales > 0 to prevent division by zero in features
+    pieces_before = len(df_final)
+    df_final = df_final[df_final['nombre_pieces_principales'] > 0]  # > 0 rooms
+    pieces_removed = pieces_before - len(df_final)
+    print(f"   - Removed {pieces_removed} rooms with zero or negative room count")
+
     # 6) Additional cleaning: drop rows with missing latitude & longitude
     print("\n5. Dropping missing latitude/longitude...")
     before = len(df_final)
