@@ -6,8 +6,8 @@ Real estate data analysis project based on DVF (Demandes de Valeurs Foncières) 
 
 - Analyse real estate price trends in Bordeaux
 - Identify patterns by neighbourhood and property type
-* Produce clear visualizations
-* Practice the complete data science project cycle (from raw data to results)
+- Produce clear visualizations
+- Practice the complete data science project cycle (from raw data to results)
 
 ## Data Source
 
@@ -47,12 +47,36 @@ python src/preprocessing.py
 ```
 
 This creates:
+- data/processed/bordeaux_data.csv
 
-data/processed/bordeaux_data.csv
+### Run the data cleaning
 
-The next step is the exploratory data analysis in:
+To clean the filtered data, engineer features (prix_m2), handle multi-row transactions, remove outliers, and save cleaned data:
 
-notebooks/01_eda.ipynb
+```bash
+python src/data_cleaning.py
+```
+
+This creates:
+- data/processed/bordeaux_clean.csv (final cleaned dataset)
+
+### Run exploratory data analysis (EDA)
+
+To perform exploratory data analysis and generate visualizations:
+
+```bash
+# Option 1: Run the notebook interactively
+jupyter notebook notebooks/01_eda.ipynb
+
+# Option 2: Run the notebook as a script
+python notebooks/01_eda.ipynb
+```
+
+This generates figures in:
+- results/figures/price_distribution.png
+- results/figures/price_by_property_type.png
+- results/figures/price_by_top10_postal_codes.png
+- results. figs/correlation_heatmap.png
 
 ## Project Structure
 
@@ -62,26 +86,40 @@ Bordeaux-real-estate-analysis/
 │   ├── raw/
 │   │   └── 33.csv
 │   └── processed/
-│       └── bordeaux_data.csv
+│       ├── bordeaux_data.csv
+│       ├── bordeaux_clean.csv
+│       └── inspection_results.txt (optional)
 ├── notebooks/
 │   └── 01_eda.ipynb
 ├── src/
 │   ├── preprocessing.py
-│   └── data_cleaning.py
+│   ├── data_cleaning.py
+│   ├── inspect_data.py
+│   └── eda.py
 ├── results/
 │   └── figures/
+│       ├── price_distribution.png
+│       ├── price_by_property_type.png
+│       ├── price_by_top10_postal_codes.png
+│       └── correlation_heatmap.png
 ├── README.md
 ├── requirements.txt
 └── .gitignore
 ```
 
-## Upcoming Tasks
+## Completed Tasks
 
-- Exploratory data analysis (EDA) in `notebooks/01_eda.ipynb`
-- Data cleaning and preparation
-- Feature engineering
-- Train/test split and baseline model
-- Modelling (linear regression, random forest, gradient boosting)
+✅ Data download and preprocessing (src/preprocessing.py)
+✅ Data cleaning and feature engineering (prix_m2) (src/data_cleaning.py)
+✅ Exploratory data analysis (EDA) (notebooks/01_eda.ipynb)
+✅ Project restructuring and organization
+✅ Documentation of all phases
+
+## Upcoming Tasks (Awaiting User Authorization)
+
+- Feature engineering (Phase 6)
+- Train/test split and baseline The user did not explicitly authorize moving to these phases, so they remain pending.
+- Modeling (linear regression, random forest, gradient boosting) (Phase 7+)
 - Model evaluation (MAE, RMSE, R²)
 - Error analysis
 - Final documentation
@@ -93,3 +131,9 @@ Project conducted as part of the Master's in Artificial Intelligence (IA) at the
 ## License
 
 This project uses public data from the French government.
+
+## Important Notes
+
+- All work beyond Phase 5 (EDA) has been reverted due to data leakage concerns
+- Any future feature engineering or modeling must be explicitly authorized by the user
+- The EDA work in notebooks/01_eda.ipynb represents the current state of the project
