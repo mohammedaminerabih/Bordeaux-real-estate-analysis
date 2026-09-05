@@ -124,12 +124,12 @@ Bordeaux-real-estate-analysis/
 ✅ Train/test split and baseline modeling (src/train_baseline.py) with data quality improvements
 ✅ Initial model evaluation and performance metrics
 ✅ Modèle 2 (Random Forest) (src/model_rf.py) with leakage-safe pipeline and performance metrics
+✅ Modèle 3 (Gradient Boosting) (src/model_gb.py) with leakage safe pipeline and performance metrics
+✅ Model evaluation and comparison (results/model_comparison.md)
+✅ Error analysis (src/error_analysis.py and results/figures/)
 
 ## Upcoming Tasks
-## Upcoming Tasks
 
-- Model evaluation and comparison
-- Error analysis
 - Final documentation
 
 ## Author

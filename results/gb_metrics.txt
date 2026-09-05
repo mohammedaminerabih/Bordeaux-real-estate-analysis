@@ -1,0 +1,33 @@
+Gradient Boosting Regressor Performance Metrics
+
+Hyperparameters:
+  n_estimators: 300
+  learning_rate: 0.1
+  max_depth: 3
+  random_state: 42
+
+Training Set:
+MAE:  696.02 €/m²
+RMSE: 941.95 €/m²
+R²:   0.5888
+
+Test Set:
+MAE:  878.82 €/m²
+RMSE: 1245.09 €/m²
+R²:   0.1555
+
+Feature Count: 32
+Training Samples: 3138
+Test Samples: 785
+
+Top 10 Feature Importances:
+  pieces_x_distance: 0.151059
+  type_local_x_longitude: 0.148287
+  latitude: 0.138982
+  surface_reelle_bati: 0.132312
+  distance_to_center_km: 0.103169
+  pieces_x_latitude: 0.065314
+  longitude: 0.052325
+  type_local_x_distance: 0.050203
+  pieces_x_longitude: 0.046479
+  type_local_x_latitude: 0.044351
