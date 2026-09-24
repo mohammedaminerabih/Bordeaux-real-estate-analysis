@@ -20,26 +20,28 @@ def download_data(url, output_file):
     
     print(f"Downloading data from {url}")
     
+    output_path = Path(output_file)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    gz_path = Path(str(output_path) + '.gz')
+
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=(10, 120))
         response.raise_for_status()
-        
-        gz_file = output_file + '.gz'
-        
+
         # Download compressed file
-        with open(gz_file, 'wb') as f:
+        with open(gz_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
         
         print(f"Download complete. Extracting...")
         
         # Extract gzip file
-        with gzip.open(gz_file, 'rb') as f_in:
-            with open(output_file, 'wb') as f_out:
+        with gzip.open(gz_path, 'rb') as f_in:
+            with open(output_path, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
         
         # Remove compressed file
-        Path(gz_file).unlink()
+        gz_path.unlink()
         
         print(f"Extraction complete: {output_file}")
         
@@ -143,6 +145,7 @@ def load_and_filter_data(input_file='data/raw/33.csv', output_file='data/process
     
     # Save filtered data
     print(f"\nSaving filtered data to: {output_path}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     df_bordeaux.to_csv(output_path, index=False)
     print(f"Saved: {len(df_bordeaux):,} rows")
     print(f"\nSuccess! You can now work with '{output_path}'")

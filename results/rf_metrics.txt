@@ -9,27 +9,27 @@ Hyperparameters:
   random_state: 42
 
 Training Set:
-MAE:  702.70 €/m²
-RMSE: 995.48 €/m²
-R²:   0.5407
+MAE:  707.77 €/m²
+RMSE: 1003.89 €/m²
+R²:   0.5329
 
 Test Set:
-MAE:  853.64 €/m²
-RMSE: 1203.61 €/m²
-R²:   0.2108
+MAE:  847.00 €/m²
+RMSE: 1198.03 €/m²
+R²:   0.2181
 
-Feature Count: 32
+Feature Count: 33
 Training Samples: 3138
 Test Samples: 785
 
 Top 10 Feature Importances:
-  surface_reelle_bati: 0.095854
-  latitude: 0.087924
-  distance_to_center_km: 0.082566
-  longitude: 0.082519
-  pieces_x_longitude: 0.071649
-  pieces_x_distance: 0.070235
-  pieces_x_latitude: 0.069359
-  type_local_x_longitude: 0.058596
-  type_local_x_latitude: 0.048488
-  type_local_x_distance: 0.043813
+  surface_reelle_bati: 0.095434
+  latitude: 0.083653
+  longitude: 0.081310
+  distance_to_center_km: 0.081135
+  pieces_x_longitude: 0.075798
+  pieces_x_latitude: 0.069188
+  pieces_x_distance: 0.066062
+  type_local_x_longitude: 0.062711
+  type_local_x_latitude: 0.049306
+  type_local_x_distance: 0.043373

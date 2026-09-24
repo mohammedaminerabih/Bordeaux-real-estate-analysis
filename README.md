@@ -62,14 +62,10 @@ This creates:
 
 ### Run exploratory data analysis (EDA)
 
-To perform exploratory data analysis and generate visualizations:
+Open the notebook and run its cells from top to bottom:
 
 ```bash
-# Option 1: Run the notebook interactively
 jupyter notebook notebooks/01_eda.ipynb
-
-# Option 2: Run the notebook as a script
-python notebooks/01_eda.ipynb
 ```
 
 This generates figures in:
@@ -77,6 +73,20 @@ This generates figures in:
 - results/figures/price_by_property_type.png
 - results/figures/price_by_top10_postal_codes.png
 - results/figures/correlation_heatmap.png
+
+### Train and evaluate the models
+
+Run these commands from the project root, after preprocessing and cleaning:
+
+```bash
+python src/train_baseline.py
+python src/model_rf.py
+python src/model_gb.py
+python src/model_validation.py
+python src/error_analysis.py
+```
+
+The first three scripts use the same 80/20 split. The baseline script also measures a median-only predictor. The validation script evaluates the fixed Random Forest settings on five shuffled folds and fits feature encodings separately inside each fold.
 
 ## Project Structure
 
@@ -96,9 +106,13 @@ Bordeaux-real-estate-analysis/
 │   ├── data_cleaning.py
 │   ├── feature_engineering.py
 │   ├── train_baseline.py
-│   └── model_rf.py
+│   ├── model_rf.py
+│   ├── model_gb.py
+│   ├── model_validation.py
+│   └── error_analysis.py
 ├── results/
-│   └── figures/
+│   ├── figures/
+│   └── source_snapshot.md
 │       ├── price_distribution.png
 │       ├── price_by_property_type.png
 │       ├── price_by_top10_postal_codes.png
@@ -120,7 +134,7 @@ Bordeaux-real-estate-analysis/
 ✅ Exploratory data analysis (EDA) (notebooks/01_eda.ipynb)
 ✅ Project restructuring and organization
 ✅ Documentation of all phases
-✅ Feature engineering with leakage prevention (src/feature_engineering.py)
+✅ Exploratory feature export (src/feature_engineering.py; not used for model evaluation)
 ✅ Train/test split and baseline modeling (src/train_baseline.py) with data quality improvements
 ✅ Initial model evaluation and performance metrics
 ✅ Modèle 2 (Random Forest) (src/model_rf.py) with leakage-safe pipeline and performance metrics
@@ -128,9 +142,11 @@ Bordeaux-real-estate-analysis/
 ✅ Model evaluation and comparison (results/model_comparison.md)
 ✅ Error analysis (src/error_analysis.py and results/figures/)
 
-## Upcoming Tasks
+## Remaining Work
 
-- Final documentation
+- Evaluate on later years or other cities before making claims about future or wider-market performance.
+- Consider spatial holdouts to measure performance in Bordeaux areas absent from training.
+- Keep the raw data snapshot used for each published result; DVF source files can be updated.
 
 ## Author
 
@@ -142,6 +158,10 @@ This project uses public data from the French government.
 
 ## Important Notes
 
-- The EDA work in notebooks/01_eda.ipynb represents the foundation of the project.
-- All modeling work (feature_engineering.py, train_baseline.py, model_rf.py) has been validated and is leakage-safe, with surface_reelle_bati correctly included as a legitimate feature.
-- The Random Forest model has been retuned with regularization parameters (max_depth=20, min_samples_leaf=5) to address overfitting. The updated model shows improved generalization: Test R² increased from 0.16 to 0.21, while reducing overfitting (training-test R² gap reduced from 0.74 to 0.33).
+- The cleaned file contains 3,923 transactions, not 3,923 individual homes. Rows are grouped by `id_mutation`; surfaces and room counts from house/apartment rows are summed for each sale. Mixed house/apartment sales are labeled `Mixte` rather than inheriting the type from whichever source row appears first.
+- The target is `prix_m2 = full mutation value / selected residential built surface`. DVF's transaction value may also include associated items, such as dependencies, whose area is not counted in this denominator. It is not an allocated price for each individual apartment or house in a multi-property sale.
+- `valeur_fonciere` and values derived from it (such as `log_valeur_fonciere`) are unavailable before a sale and must not be model inputs. `surface_reelle_bati` is kept because the built area is normally known from a listing; check that DVF's surface matches the listing definition for any real listing-time use.
+- `src/feature_engineering.py` exports descriptive features over the complete dataset, including full-dataset frequency counts. Do not use its output to estimate model performance. The model scripts split first and compute their frequency mappings from training data only.
+- The corrected Random Forest's held-out result is R²=0.2181 and MAE=847.00 €/m². These are from one random split and show modest performance within the 2024 Bordeaux sample, not proven performance in another year or location. See `results/rf_cross_validation.md` for the five-fold evaluation.
+- A fresh clone does not contain the ignored `data/` files. Run preprocessing to download the source data before cleaning or modeling. The official DVF files are updated over time, so retain the exact source snapshot when reproducing a published result.
+- `results/source_snapshot.md` records the SHA-256 of the source CSV used for the current metrics. Compare the downloaded file with that checksum when reproducing them.

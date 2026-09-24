@@ -16,6 +16,7 @@ from pathlib import Path
 import math
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import joblib
 import warnings
@@ -99,6 +100,7 @@ def engineer_features_train(X_train):
     #   PROPERTY TYPE FEATURES  
     # Binary encoding: Maison=1, Appartement=0
     df_train['type_local_encoded'] = (df_train['type_local'] == 'Maison').astype(int)
+    df_train['type_local_mixed'] = (df_train['type_local'] == 'Mixte').astype(int)
     # Frequency encoding (computed on training set only)
     type_local_counts = df_train['type_local'].value_counts()
     df_train['type_local_frequency'] = df_train['type_local'].map(type_local_counts)
@@ -243,6 +245,7 @@ def engineer_features_test(X_test, transform_objects):
     #   PROPERTY TYPE FEATURES  
     # Binary encoding: Maison=1, Appartement=0
     df_test['type_local_encoded'] = (df_test['type_local'] == 'Maison').astype(int)
+    df_test['type_local_mixed'] = (df_test['type_local'] == 'Mixte').astype(int)
     # Frequency encoding (using TRAINING SET mapping)
     df_test['type_local_frequency'] = df_test['type_local'].map(transform_objects['type_local_counts'])
     # Fill NaN for unseen categories with 0 (or could use min/avg frequency)
@@ -422,7 +425,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test, model_name="Baseline
 
     return metrics
 
-def save_model_and_data(model, feature_names, X_train, X_test, y_train, y_test, metrics):
+def save_model_and_data(model, feature_names, X_train, X_test, y_train, y_test, metrics, dummy_metrics):
     """Save model, feature names, and processed data"""
     base_dir = Path(__file__).resolve().parent.parent
 
@@ -475,6 +478,10 @@ def save_model_and_data(model, feature_names, X_train, X_test, y_train, y_test, 
         f.write(f"MAE:  {metrics['test_mae']:.2f} €/m²\n")
         f.write(f"RMSE: {metrics['test_rmse']:.2f} €/m²\n")
         f.write(f"R²:   {metrics['test_r2']:.4f}\n\n")
+        f.write("Median Dummy Baseline (predicts the training median for every transaction):\n")
+        f.write(f"Test MAE:  {dummy_metrics['test_mae']:.2f} €/m²\n")
+        f.write(f"Test RMSE: {dummy_metrics['test_rmse']:.2f} €/m²\n")
+        f.write(f"Test R²:   {dummy_metrics['test_r2']:.4f}\n\n")
         f.write(f"Feature Count: {len(feature_names)}\n")
         f.write(f"Training Samples: {X_train.shape[0]}\n")
         f.write(f"Test Samples: {X_test.shape[0]}\n")
@@ -512,7 +519,7 @@ def main():
         print(f"Train features: {list(X_train_model.columns)}")
         print(f"Test features:  {list(X_test_model.columns)}")
         # Use intersection to be safe
-        common_features = list(set(X_train_model.columns) & set(X_test_model.columns))
+        common_features = [column for column in X_train_model.columns if column in X_test_model.columns]
         X_train_model = X_train_model[common_features]
         X_test_model = X_test_model[common_features]
         feature_names = common_features
@@ -524,8 +531,19 @@ def main():
     # Evaluation
     metrics = evaluate_model(model, X_train_model, y_train, X_test_model, y_test)
 
+    # Simple reference with no property or location information.
+    dummy_model = DummyRegressor(strategy='median')
+    dummy_model.fit(X_train_model, y_train)
+    dummy_metrics = evaluate_model(
+        dummy_model, X_train_model, y_train, X_test_model, y_test,
+        model_name="Median Dummy Baseline"
+    )
+
     # Save model, data, and metrics
-    save_model_and_data(model, feature_names, X_train_model, X_test_model, y_train, y_test, metrics)
+    save_model_and_data(
+        model, feature_names, X_train_model, X_test_model, y_train, y_test,
+        metrics, dummy_metrics
+    )
 
     print()
     print("=" * 70)

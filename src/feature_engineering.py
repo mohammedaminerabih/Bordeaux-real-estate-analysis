@@ -1,8 +1,9 @@
 """
 Feature Engineering for Bordeaux Real Estate Analysis
-Create safe features for predicting prix_m2 (price per square meter)
-Strictly avoids data leakage: excludes valeur_fonciere, surface_reelle_bati,
-and any transformations 
+Create descriptive features for the cleaned Bordeaux dataset.
+This script computes frequency encodings on the complete dataset and is for
+exploration/export only. Use the train/test-safe feature code in the model
+scripts for model evaluation.
 """
 
 import pandas as pd
@@ -37,19 +38,19 @@ def load_cleaned_data(filepath='data/processed/bordeaux_clean.csv'):
     return df
 
 def engineer_features(df):
-    """Generate safe features from cleaned data"""
+    """Generate descriptive features; do not use these full-data counts for model evaluation."""
     print("Starting feature engineering...")
     # To avoid warnings
     df_features = df.copy()
-    # Drop leakage columns that shouldnt be used as features
-    # Keep prix_m2 as target variable
-    df_features = df_features.drop(columns=['valeur_fonciere', 'surface_reelle_bati'], errors='ignore')
+    # The final transaction price is unavailable before a sale, so remove it.
+    # The built surface is available from a listing and remains a valid feature.
+    df_features = df_features.drop(columns=['valeur_fonciere'], errors='ignore')
 
     # Ensure date_mutation is datetime
     df_features['date_mutation'] = pd.to_datetime(df_features['date_mutation'])
 
     # These are already in the dataset and safe to use
-    # (excluded: valeur_fonciere, surface_reelle_bati, prix_m2)
+    # The final sale price is excluded; surface remains available as a feature.
     safe_originals = ['id_mutation', 'date_mutation', 'type_local',
                       'code_postal', 'nom_commune', 'nombre_pieces_principales',
                       'latitude', 'longitude']
@@ -69,6 +70,9 @@ def engineer_features(df):
     # PROPERTY TYPE FEATURES
     # Binary encoding: Maison=1, Appartement=0
     df_features['type_local_encoded'] = (df_features['type_local'] == 'Maison').astype(int)
+    df_features['type_local_mixed'] = (df_features['type_local'] == 'Mixte').astype(int)
+    type_counts = df_features['type_local'].value_counts()
+    df_features['type_local_frequency'] = df_features['type_local'].map(type_counts)
 
     # POSTAL CODE FEATURES
     # Frequency encoding: how common each postal code is
@@ -165,10 +169,10 @@ def engineer_features(df):
     # These will be identified later in train/test split script
     non_predictive = ['id_mutation', 'date_mutation', 'nom_commune',
                       'valeur_fonciere', 'surface_reelle_bati', 'prix_m2']
-    # Note: valeur_fonciere, surface_reelle_bati, prix_m2 are not in df_features (we never added them)
+    # These names are excluded from modeling when present; prix_m2 is the target.
 
     # Ensure we did noy accidentally create any leakage features
-    leakage_check = ['valeur_fonciere', 'surface_reelle_bati',
+    leakage_check = ['valeur_fonciere',
                      'log_surface', 'log_valeur_fonciere', 'log_prix_m2',
                      'pieces_per_surface', 'surface_per_piece', 'price_per_room']
     unexpected_leakage = [col for col in leakage_check if col in df_features.columns]
@@ -209,13 +213,13 @@ def main():
     # Print summary of feature types
     print("\nFeature Summary:")
     print("- Temporal features: date_year, date_month, date_quarter, date_dayofweek, date_season")
-    print("- Property type: type_local_encoded, type_local_frequency")
+    print("- Property type: house flag, mixed-sale flag, type frequency")
     print("- Postal code: frequency, top5 binaries, area groups, distance transformations")
     print("- Geographical: latitude, longitude, distance_to_center_km, binned versions")
     print("- Property characteristics: nombre_pieces_principale (raw, squared, cubed, frequency, binned)")
     print("- Interactions: type_local x geo, pieces x geo, type_local x pieces")
     print()
-    print("All features are safe: none derived from valeur_fonciere or surface_reelle_bati")
+    print("Exploratory features saved. Do not use full-data frequency encodings to evaluate a model.")
 
 if __name__ == "__main__":
     main()

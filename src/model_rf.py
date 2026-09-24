@@ -99,6 +99,7 @@ def engineer_features_train(X_train):
     #   PROPERTY TYPE FEATURES
     # Binary encoding: Maison=1, Appartement=0
     df_train['type_local_encoded'] = (df_train['type_local'] == 'Maison').astype(int)
+    df_train['type_local_mixed'] = (df_train['type_local'] == 'Mixte').astype(int)
     # Frequency encoding (computed on training set only)
     type_local_counts = df_train['type_local'].value_counts()
     df_train['type_local_frequency'] = df_train['type_local'].map(type_local_counts)
@@ -243,6 +244,7 @@ def engineer_features_test(X_test, transform_objects):
     #   PROPERTY TYPE FEATURES
     # Binary encoding: Maison=1, Appartement=0
     df_test['type_local_encoded'] = (df_test['type_local'] == 'Maison').astype(int)
+    df_test['type_local_mixed'] = (df_test['type_local'] == 'Mixte').astype(int)
     # Frequency encoding (using TRAINING SET mapping)
     df_test['type_local_frequency'] = df_test['type_local'].map(transform_objects['type_local_counts'])
     # Fill NaN for unseen categories with 0 (or could use min/avg frequency)
@@ -531,7 +533,7 @@ def main():
         print(f"Train features: {list(X_train_model.columns)}")
         print(f"Test features:  {list(X_test_model.columns)}")
         # Use intersection to be safe
-        common_features = list(set(X_train_model.columns) & set(X_test_model.columns))
+        common_features = [column for column in X_train_model.columns if column in X_test_model.columns]
         X_train_model = X_train_model[common_features]
         X_test_model = X_test_model[common_features]
         feature_names = common_features

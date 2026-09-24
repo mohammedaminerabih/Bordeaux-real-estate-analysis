@@ -36,21 +36,32 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     df_clean = df_clean.dropna(subset=['valeur_fonciere'])
     print(f"   - After dropping missing prices: {len(df_clean)}")
 
-    # 2) Select Columns
+    # Check the fields needed below instead of silently continuing with an incomplete input file.
     cols_to_keep = [
-        'id_mutation', 'date_mutation', 'valeur_fonciere',
+        'id_mutation', 'date_mutation', 'nature_mutation', 'valeur_fonciere',
         'type_local', 'code_postal', 'nom_commune',
         'surface_reelle_bati', 'nombre_pieces_principales',
         'latitude', 'longitude'
     ]
-    # Ensure columns exist before selecting
-    cols_to_keep = [c for c in cols_to_keep if c in df_clean.columns]
+    missing_columns = [column for column in cols_to_keep if column not in df_clean.columns]
+    if missing_columns:
+        raise ValueError(f"Input data is missing required columns: {missing_columns}")
     df_clean = df_clean[cols_to_keep]
 
+    # DVF repeats the mutation value on its component rows. we don't choose one value if the source data disagrees within a mutation
+    price_counts = df_clean.groupby('id_mutation')['valeur_fonciere'].nunique(dropna=True)
+    inconsistent_prices = price_counts[price_counts > 1]
+    if not inconsistent_prices.empty:
+        raise ValueError(
+            "Found mutations with multiple fonciere values; review the source "
+            f"before aggregating: {inconsistent_prices.index[:10].tolist()}"
+        )
+
     # 3) Deduplication Logic 
-    # We must be careful here. If a house has 2 rows (House + Garden), usually only the House row has surface_reelle_bati
-    # The price is on both
-    # Our Strategy is to group by mutation and sum surface, but take 1st of price since its repeated
+    # The modeling unit is one complete mutation (transaction)
+    # The transaction price is repeated on its DVF rows
+    # built surfaces and room counts are sumed across the selected housing
+    # rows. A sale containing both houses and apartments is labeled "Mixte"
 
     print("\n2. Handling multi-row transactions...")
 
@@ -58,13 +69,17 @@ def clean_data(input_file='data/processed/bordeaux_data.csv', output_file='data/
     agg_rules = {
         'date_mutation': 'first',
         'valeur_fonciere': 'first',  # Price is repeated, take one
-        'type_local': 'first',       # To simplify take main type
+        'type_local': lambda values: (
+            values.dropna().iloc[0]
+            if values.dropna().nunique() == 1
+            else 'Mixte'
+        ),
         'code_postal': 'first',
         'nom_commune': 'first',
         'surface_reelle_bati': 'sum', # Sum surface parts if split
         'nombre_pieces_principales': 'sum',
-        'latitude': 'first',
-        'longitude': 'first'
+        'latitude': 'mean',          # Approximate center for multi-parcel sales
+        'longitude': 'mean'
     }
 
     # Aggregating by mutation
