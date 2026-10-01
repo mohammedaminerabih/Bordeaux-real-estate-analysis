@@ -11,6 +11,11 @@ import numpy as np
 from pathlib import Path
 import math
 
+try:
+    from .feature_utils import add_postal_area_features
+except ImportError:  # Supports running this file directly from the project README.
+    from feature_utils import add_postal_area_features
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance between two points
@@ -84,15 +89,8 @@ def engineer_features(df):
     for i, postal in enumerate(top5_postals, start=1):
         df_features[f'code_postal_top{i}'] = (df_features['code_postal'] == postal).astype(int)
 
-    # Area group based on first three digits of postal code (all are 33xxx, so we use full code for grouping)
-    # Simpler: assign to bins based on postal code ranges
-    df_features['code_postal_area'] = pd.cut(df_features['code_postal'],
-                                             bins=[0, 33099, 33199, 33299, 33399, 33499, 33599, 33699, 33799, 33899, 33999, np.inf],
-                                             labels=['other','33000-33099','33100-33199','33200-33299','33300-33399',
-                                                     '33400-33499','33500-33599','33600-33699','33700-33799','33800-33899','33900-33999'],
-                                             right=False)
-    # Optionnel - onvert to categorical codes for modeling 
-    df_features['code_postal_area_code'] = df_features['code_postal_area'].cat.codes
+    # Exact postal ranges; this full-data output is exploratory only.
+    df_features = add_postal_area_features(df_features)
 
     # GEOGRAPHICAL FEATURES
     # Keep raw latitude and longitude

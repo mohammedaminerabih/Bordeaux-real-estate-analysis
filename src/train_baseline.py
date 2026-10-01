@@ -22,6 +22,11 @@ import joblib
 import warnings
 warnings.filterwarnings('ignore')
 
+try:
+    from .feature_utils import add_postal_area_features
+except ImportError:  # Supports running this file directly from the project README.
+    from feature_utils import add_postal_area_features
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     """ Calculate the great circle distance between two points
         on the earth in decimal degrees
@@ -85,17 +90,7 @@ def engineer_features_train(X_train):
                       'code_postal', 'nom_commune', 'nombre_pieces_principales',
                       'latitude', 'longitude']
 
-    #   TEMPORAL FEATURES 
-    df_train['date_year'] = df_train['date_mutation'].dt.year
-    df_train['date_month'] = df_train['date_mutation'].dt.month
-    df_train['date_quarter'] = df_train['date_mutation'].dt.quarter
-    df_train['date_dayofweek'] = df_train['date_mutation'].dt.dayofweek  # Monday=0
-    # Season: Spring (3-5), Summer (6-8), Fall (9-11), Winter (12,1,2)
-    df_train['date_season'] = df_train['date_month'].apply(
-        lambda m: 'winter' if m in [12,1,2] else
-                  'spring' if m in [3,4,5] else
-                  'summer' if m in [6,7,8] else 'fall'
-    )
+    # date_mutation is when the sale happened, not a date known at listing time.
 
     #   PROPERTY TYPE FEATURES  
     # Binary encoding: Maison=1, Appartement=0
@@ -115,15 +110,8 @@ def engineer_features_train(X_train):
     for i, postal in enumerate(top5_postals, start=1):
         df_train[f'code_postal_top{i}'] = (df_train['code_postal'] == postal).astype(int)
 
-    # Area group based on postal code ranges (based on TRAINING SET distribution)
-    # Simpler: assign to bins based on postal code ranges
-    df_train['code_postal_area'] = pd.cut(df_train['code_postal'],
-                                         bins=[0, 33099, 33199, 33299, 33399, 33499, 33599, 33699, 33799, 33899, 33999, np.inf],
-                                         labels=['other','33000-33099','33100-33199','33200-33299','33300-33399',
-                                                 '33400-33499','33500-33599','33600-33699','33700-33799','33800-33899','33900-33999'],
-                                         right=False)
-    # Convert to categorical codes for modeling
-    df_train['code_postal_area_code'] = df_train['code_postal_area'].cat.codes
+    # Exact postal ranges, represented without an artificial numeric order.
+    df_train = add_postal_area_features(df_train)
 
     #   GEOGRAPHICAL FEATURES  
     # Keep raw latitude and longitude
@@ -195,9 +183,6 @@ def engineer_features_train(X_train):
         'postal_counts': postal_counts,
         'top5_postals': top5_postals,
         'type_local_counts': type_local_counts,
-        'code_postal_area_bins': [0, 33099, 33199, 33299, 33399, 33499, 33599, 33699, 33799, 33899, 33999, np.inf],
-        'code_postal_area_labels': ['other','33000-33099','33100-33199','33200-33299','33300-33399',
-                                    '33400-33499','33500-33599','33600-33699','33700-33799','33800-33899','33900-33999'],
         'distance_bins': [0, 2, 5, 10, np.inf],
         'distance_labels': ['very_close','close','medium','far'],
         'latitude_bins': [44.0, 44.5, 44.8, 45.0, np.inf],
@@ -230,17 +215,7 @@ def engineer_features_test(X_test, transform_objects):
     # Ensure date_mutation is datetime
     df_test['date_mutation'] = pd.to_datetime(df_test['date_mutation'])
 
-    #   TEMPORAL FEATURES  
-    df_test['date_year'] = df_test['date_mutation'].dt.year
-    df_test['date_month'] = df_test['date_mutation'].dt.month
-    df_test['date_quarter'] = df_test['date_mutation'].dt.quarter
-    df_test['date_dayofweek'] = df_test['date_mutation'].dt.dayofweek  # Monday=0
-    # Season: Spring (3-5), Summer (6-8), Fall (9-11), Winter (12,1,2)
-    df_test['date_season'] = df_test['date_month'].apply(
-        lambda m: 'winter' if m in [12,1,2] else
-                  'spring' if m in [3,4,5] else
-                  'summer' if m in [6,7,8] else 'fall'
-    )
+    # date_mutation is not transformed into a listing-time predictor.
 
     #   PROPERTY TYPE FEATURES  
     # Binary encoding: Maison=1, Appartement=0
@@ -261,13 +236,7 @@ def engineer_features_test(X_test, transform_objects):
     for i, postal in enumerate(transform_objects['top5_postals'], start=1):
         df_test[f'code_postal_top{i}'] = (df_test['code_postal'] == postal).astype(int)
 
-    # Area group based on postal code ranges (using TRAINING SET bins)
-    df_test['code_postal_area'] = pd.cut(df_test['code_postal'],
-                                        bins=transform_objects['code_postal_area_bins'],
-                                        labels=transform_objects['code_postal_area_labels'],
-                                        right=False)
-    # Convert to categorical codes for modeling
-    df_test['code_postal_area_code'] = df_test['code_postal_area'].cat.codes
+    df_test = add_postal_area_features(df_test)
 
     #   GEOGRAPHICAL FEATURES  
     # Keep raw latitude and longitude
@@ -342,18 +311,16 @@ def prepare_modeling_data(df_features):
     Excludes identifiers and non-predictive columns"""
     
     # Identify columns to exclude from modeling
-    # These are either identifiers, dates (we use extracted features),
+    # These are identifiers, deed dates (unavailable at listing time),
     # original categorical columns (we use encoded versions),
     # binned categorical columns (we use the _code versions),
     # or potentially redundant/non-predictive
     exclude_cols = [
         'id_mutation',           # Identifier
-        'date_mutation',         # Original date (we use extracted features)
+        'date_mutation',         # Deed date; no date-derived predictors are used
         'type_local',            # Original categorical (we use type_local_encoded)
         'code_postal',           # Original categorical (we use frequency and top5 features)
         'nom_commune',           # Likely redundant with code_postal
-        'date_season',           # Categorical season (we use more granular temporal features)
-        'code_postal_area',      # Categorical area (we use code_postal_area_code)
         'distance_to_center_bin', # Categorical distance bin (we use distance_to_center_bin_code)
         'latitude_bin',          # Categorical latitude bin (we use latitude_bin_code)
         'longitude_bin',         # Categorical longitude bin (we use longitude_bin_code)

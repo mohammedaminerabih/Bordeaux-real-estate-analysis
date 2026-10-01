@@ -46,3 +46,6 @@ data/
 .DS_Store
 Thumbs.db
 *.gz
+
+# Keep cross-validation result table
+!results/rf_cross_validation.csv

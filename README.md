@@ -30,6 +30,12 @@ Data comes from the official DVF database:
 pip install -r requirements.txt
 ```
 
+Run the small feature-encoding regression tests with:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 ### Download and Preprocess Data
 
 The script `src/preprocessing.py` automatically downloads the data on first run. Alternatively:
@@ -86,7 +92,8 @@ python src/model_validation.py
 python src/error_analysis.py
 ```
 
-The first three scripts use the same 80/20 split. The baseline script also measures a median-only predictor. The validation script evaluates the fixed Random Forest settings on five shuffled folds and fits feature encodings separately inside each fold.
+The first three scripts use the same 80/20 split, the baseline script also measures a median-only predictor, validation script evaluates the fixed Random Forest settings on five shuffled folds and fits feature encodings separately inside each fold. 
+These evaluations are random splits within Bordeaux in 2024, not tests of future years or unseen places. Date-of-sale-derived predictors are excluded because the project is framed as a listing-time estimate, postal areas use fixed 100-code intervals and ONE-HOT indicators rather than an artificial ordinal scale.
 
 ## Project Structure
 
@@ -102,6 +109,7 @@ Bordeaux-real-estate-analysis/
 ├── notebooks/
 │   └── 01_eda.ipynb
 ├── src/
+│   ├── feature_utils.py
 │   ├── preprocessing.py
 │   ├── data_cleaning.py
 │   ├── feature_engineering.py
@@ -110,13 +118,17 @@ Bordeaux-real-estate-analysis/
 │   ├── model_gb.py
 │   ├── model_validation.py
 │   └── error_analysis.py
+├── tests/
+│   └── test_feature_utils.py
 ├── results/
 │   ├── figures/
-│   └── source_snapshot.md
-│       ├── price_distribution.png
-│       ├── price_by_property_type.png
-│       ├── price_by_top10_postal_codes.png
-│       └── correlation_heatmap.png
+│   ├── baseline_metrics.txt
+│   ├── rf_metrics.txt
+│   ├── gb_metrics.txt
+│   ├── rf_cross_validation.csv
+│   ├── rf_cross_validation.md
+│   ├── source_snapshot.md
+│   ├── model_comparison.md
 ├── models/
 │   ├── baseline_linear_regression.joblib
 │   ├── feature_names.joblib
@@ -144,9 +156,9 @@ Bordeaux-real-estate-analysis/
 
 ## Remaining Work
 
-- Evaluate on later years or other cities before making claims about future or wider-market performance.
-- Consider spatial holdouts to measure performance in Bordeaux areas absent from training.
-- Keep the raw data snapshot used for each published result; DVF source files can be updated.
+- Evaluating on later years or other cities before making claims about future or wider-market performance.
+- Considering spatial holdouts to measure performance in Bordeaux areas absent from training.
+- Keep the raw data snapshot used for each published result, DVF source files can be updated.
 
 ## Author
 
@@ -160,8 +172,9 @@ This project uses public data from the French government.
 
 - The cleaned file contains 3,923 transactions, not 3,923 individual homes. Rows are grouped by `id_mutation`; surfaces and room counts from house/apartment rows are summed for each sale. Mixed house/apartment sales are labeled `Mixte` rather than inheriting the type from whichever source row appears first.
 - The target is `prix_m2 = full mutation value / selected residential built surface`. DVF's transaction value may also include associated items, such as dependencies, whose area is not counted in this denominator. It is not an allocated price for each individual apartment or house in a multi-property sale.
-- `valeur_fonciere` and values derived from it (such as `log_valeur_fonciere`) are unavailable before a sale and must not be model inputs. `surface_reelle_bati` is kept because the built area is normally known from a listing; check that DVF's surface matches the listing definition for any real listing-time use.
+- `valeur_fonciere` and values derived from it are unavailable before a sale and must not be model inputs. The scripts also exclude `date_mutation` and features derived from it because the deed date is not known when a listing-time estimate is made. `surface_reelle_bati` is kept because built area is normally listed, but check that DVF's definition matches the listing's.
+- Postal-area features use exact 100-code intervals and one-hot encoding; they are not treated as ordinal numeric values.
 - `src/feature_engineering.py` exports descriptive features over the complete dataset, including full-dataset frequency counts. Do not use its output to estimate model performance. The model scripts split first and compute their frequency mappings from training data only.
-- The corrected Random Forest's held-out result is R²=0.2181 and MAE=847.00 €/m². These are from one random split and show modest performance within the 2024 Bordeaux sample, not proven performance in another year or location. See `results/rf_cross_validation.md` for the five-fold evaluation.
+- Current results are recorded in `results/model_comparison.md`. Interpret them as transaction-level metrics for the stated 2024 Bordeaux sample, not as validated estimates for individual listings, other years, or unseen areas.
 - A fresh clone does not contain the ignored `data/` files. Run preprocessing to download the source data before cleaning or modeling. The official DVF files are updated over time, so retain the exact source snapshot when reproducing a published result.
 - `results/source_snapshot.md` records the SHA-256 of the source CSV used for the current metrics. Compare the downloaded file with that checksum when reproducing them.

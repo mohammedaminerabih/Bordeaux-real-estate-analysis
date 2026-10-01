@@ -2,20 +2,20 @@ Baseline Linear Regression Performance Metrics
 =====
 
 Training Set:
-MAE:  923.93 €/m²
-RMSE: 1291.82 €/m²
-R²:   0.2265
+MAE:  923.97 €/m²
+RMSE: 1292.69 €/m²
+R²:   0.2255
 
 Test Set:
-MAE:  878.50 €/m²
-RMSE: 1216.16 €/m²
-R²:   0.1943
+MAE:  881.13 €/m²
+RMSE: 1218.05 €/m²
+R²:   0.1918
 
-Median Dummy Baseline (predict the training median for every transaction):
+Median Dummy Baseline (predicts the training median for every transaction):
 Test MAE:  1013.60 €/m²
 Test RMSE: 1358.95 €/m²
 Test R²:   -0.0060
 
-Feature Count: 33
+Feature Count: 38
 Training Samples: 3138
 Test Samples: 785
