@@ -105,7 +105,6 @@ Bordeaux-real-estate-analysis/
 │   └── processed/
 │       ├── bordeaux_data.csv
 │       ├── bordeaux_clean.csv
-│       └── inspection_results.txt (optional)
 ├── notebooks/
 │   └── 01_eda.ipynb
 ├── src/
